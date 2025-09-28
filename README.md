@@ -4,6 +4,15 @@ A concurrent auction simulator implemented in Go.
 
 ---
 
+## Documentation
+
+For detailed documentation, see:
+
+- [Assumptions](docs/assumptions.md) – Simulation assumptions, auction timing, resource standardization, and bidder behavior.
+- [Architecture](docs/architecture.md) – High-level design, services, and interaction flow.
+
+---
+
 ## Run Locally (Go)
 
 **Prerequisites:** Go 1.25.0+
