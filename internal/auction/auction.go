@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-
 // LiveAuction manages a single auction while it is running.
 type LiveAuction struct {
 	mu   sync.Mutex
@@ -27,13 +26,15 @@ func NewLiveAuction(id string, attrs map[string]interface{}, start, deadline tim
 
 // AcceptBid records the bid if it arrived before deadline.
 func (a *LiveAuction) AcceptBid(b Bid) {
-	if b.Time.After(a.data.Deadline) {
-		return // too late
-	}
-	a.mu.Lock()
+	a.mu.Lock() 
 	defer a.mu.Unlock()
 
+	if b.Time.Before(a.data.StartedAt) || b.Time.After(a.data.Deadline) {
+		return 
+	}
+
 	a.data.Bids = append(a.data.Bids, b)
+
 	if a.data.Winner == nil ||
 		b.Amount > a.data.Winner.Amount ||
 		(b.Amount == a.data.Winner.Amount && b.Time.Before(a.data.Winner.Time)) {
