@@ -10,8 +10,12 @@ type Bid struct {
 }
 
 type Auction struct {
-	AuctionID string    `json:"auction_id"`
-	StartedAt time.Time `json:"started_at"`
-	Deadline  time.Time `json:"deadline"`
-	Winner    *Bid      `json:"winner,omitempty"`
+	AuctionID  string                 `json:"auction_id"`
+	Attributes map[string]interface{} `json:"attributes"`
+	StartedAt  time.Time              `json:"start_time"`
+	ClosedAt   time.Time              `json:"closed_at"`
+	Deadline   time.Time              `json:"deadline_time"`
+	Bids       []Bid                  `json:"bids"`
+	Winner     *Bid                   `json:"winner"`
+	Status     string                 `json:"status"`
 }

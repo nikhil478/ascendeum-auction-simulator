@@ -5,31 +5,53 @@ import (
 	"time"
 )
 
+
+// LiveAuction manages a single auction while it is running.
 type LiveAuction struct {
-	Auction
-	mu sync.Mutex
+	mu   sync.Mutex
+	data Auction
 }
 
-func NewLiveAuction(id string, start, deadline time.Time) *LiveAuction {
+func NewLiveAuction(id string, attrs map[string]interface{}, start, deadline time.Time) *LiveAuction {
 	return &LiveAuction{
-		Auction: Auction{
-			AuctionID: id,
-			StartedAt: start,
-			Deadline:  deadline,
+		data: Auction{
+			AuctionID:  id,
+			Attributes: attrs,
+			StartedAt:  start,
+			Deadline:   deadline,
+			Bids:       []Bid{},
+			Status:     "open",
 		},
 	}
 }
 
-// AcceptBid checks deadline and updates winner safely.
+// AcceptBid records the bid if it arrived before deadline.
 func (a *LiveAuction) AcceptBid(b Bid) {
-	if time.Now().After(a.Deadline) {
-		return // auction closed
+	if b.Time.After(a.data.Deadline) {
+		return // too late
 	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	if a.Winner == nil || b.Amount > a.Winner.Amount ||
-		(b.Amount == a.Winner.Amount && b.Time.Before(a.Winner.Time)) {
-		b.AuctionID = a.AuctionID
-		a.Winner = &b
+
+	a.data.Bids = append(a.data.Bids, b)
+	if a.data.Winner == nil ||
+		b.Amount > a.data.Winner.Amount ||
+		(b.Amount == a.data.Winner.Amount && b.Time.Before(a.data.Winner.Time)) {
+		a.data.Winner = &b
 	}
+}
+
+// Close marks the auction closed and records ClosedAt.
+func (a *LiveAuction) Close() {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.data.Status = "closed"
+	a.data.ClosedAt = time.Now()
+}
+
+// Snapshot returns a copy of the final AuctionResult.
+func (a *LiveAuction) Snapshot() Auction {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.data
 }
