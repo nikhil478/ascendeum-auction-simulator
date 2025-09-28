@@ -30,7 +30,9 @@ func main() {
 
 	resMeta := resource.Capture(runtime.NumCPU())
 	engine := auction.NewEngine(*numAuctions, *timeout)
-	engine.Start(ctx, runtime.NumCPU())
+
+	workers := 4 * runtime.NumCPU()
+	engine.Start(ctx, workers)
 
 	bidders := bidder.NewBidders(*numBidders, *seed)
 
